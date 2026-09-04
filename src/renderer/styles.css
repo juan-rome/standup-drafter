@@ -1,0 +1,313 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f5f5f7;
+  --card-bg: #ffffff;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --accent: #2563eb;
+  --border: #e0e0e5;
+  --success: #16a34a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #242426;
+    --card-bg: #2c2c2e;
+    --text: #f5f5f7;
+    --muted: #9a9a9e;
+    --border: #3a3a3c;
+    --success: #34d058;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+}
+
+body {
+  background: transparent;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.panel {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 12px 14px 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  -webkit-app-region: drag;
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-icon {
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.menu-wrap {
+  position: relative;
+  -webkit-app-region: no-drag;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 22px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 10;
+  min-width: 110px;
+}
+
+.menu-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: var(--text);
+  border: none;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.menu-dropdown button:hover {
+  background: var(--bg);
+}
+
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-toggle:hover {
+  background: var(--bg);
+}
+
+.menu-toggle input {
+  width: auto;
+  margin: 0;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+.connect-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.service-icon {
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.connect-label {
+  width: 44px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.connect-row .badge {
+  flex: 1;
+  margin: 0;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+
+code {
+  font-size: 11px;
+}
+
+.code-box {
+  margin: 4px 0 10px;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.code-box p {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.code {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.slack-token-row {
+  display: flex;
+  gap: 6px;
+  margin: -2px 0 8px;
+}
+
+.slack-token-row[hidden] {
+  display: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.badge-off {
+  color: var(--muted);
+}
+
+.badge-on {
+  color: var(--success);
+}
+
+.badge-on .badge-dot {
+  display: none;
+}
+
+.badge-on::before {
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.small-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.full-btn {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+}
+
+textarea {
+  resize: none;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.row select {
+  flex: 1;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%) translateY(0);
+  background: var(--success);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  max-width: 90%;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.toast.error {
+  background: #dc2626;
+}
