@@ -24,3 +24,16 @@ test('parseTicketStatuses maps a Jira search response into a key-indexed lookup'
 test('parseTicketStatuses handles an empty result', () => {
   assert.deepEqual(parseTicketStatuses({ issues: [] }), {});
 });
+
+test('parseTicketStatuses includes a browse URL per ticket when baseUrl is given', () => {
+  const response = {
+    issues: [{ key: 'KAN-4', fields: { status: { name: 'In QA' }, summary: 'Add character counter' } }],
+  };
+  assert.deepEqual(parseTicketStatuses(response, 'https://yourteam.atlassian.net'), {
+    'KAN-4': {
+      status: 'In QA',
+      summary: 'Add character counter',
+      url: 'https://yourteam.atlassian.net/browse/KAN-4',
+    },
+  });
+});

@@ -27,14 +27,16 @@ async function saveCredentials(baseUrl, email, apiToken) {
   return { success: true };
 }
 
-// Pure transform from a Jira /search response into { KEY: { status, summary } }.
-// Kept free of network/store access so it can be unit tested directly.
-function parseTicketStatuses(searchResponse) {
+// Pure transform from a Jira /search response into { KEY: { status, summary, url } }.
+// Kept free of network/store access so it can be unit tested directly. `baseUrl`
+// is optional — pass it to also get a browse-URL for each ticket.
+function parseTicketStatuses(searchResponse, baseUrl) {
   const result = {};
   for (const issue of searchResponse.issues || []) {
     result[issue.key] = {
       status: issue.fields.status.name,
       summary: issue.fields.summary,
+      ...(baseUrl ? { url: `${baseUrl}/browse/${issue.key}` } : {}),
     };
   }
   return result;
@@ -45,14 +47,15 @@ async function fetchTicketStatuses(keys) {
   const credentials = store.get('jira');
   if (!credentials) return {};
 
+  // Atlassian retired GET /rest/api/3/search (410 Gone) in favor of /search/jql.
   const jql = `key in (${keys.join(',')})`;
-  const url = `${credentials.baseUrl}/rest/api/3/search?jql=${encodeURIComponent(jql)}&fields=status,summary`;
+  const url = `${credentials.baseUrl}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&fields=status,summary`;
   const res = await fetch(url, {
     headers: { Authorization: authHeader(credentials), Accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`Jira API request failed: ${res.status}`);
 
-  return parseTicketStatuses(await res.json());
+  return parseTicketStatuses(await res.json(), credentials.baseUrl);
 }
 
 module.exports = { isAuthenticated, saveCredentials, fetchTicketStatuses, normalizeBaseUrl, parseTicketStatuses };

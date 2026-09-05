@@ -17,7 +17,8 @@ function humanize(text) {
 }
 
 function draftTicketLines(ticket) {
-  const lines = [`- *${ticket.key}*${ticket.jira ? ` — ${ticket.jira.status}` : ''}`];
+  const keyLabel = ticket.jira?.url ? `<${ticket.jira.url}|${ticket.key}>` : ticket.key;
+  const lines = [`- *${keyLabel}*${ticket.jira ? ` — ${ticket.jira.status}` : ''}`];
 
   if (ticket.prs.length > 0) {
     const pr = ticket.prs[0];

@@ -139,6 +139,24 @@ test('draftStandup appends the Jira status next to the ticket key when present',
   assert.match(text, /- \*KAN-4\* — In QA/);
 });
 
+test('draftStandup hyperlinks the ticket key when Jira provides a URL', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [],
+    tickets: [
+      {
+        key: 'KAN-4',
+        prs: [],
+        commits: [],
+        jira: { status: 'In QA', summary: 'Add counter', url: 'https://yourteam.atlassian.net/browse/KAN-4' },
+      },
+    ],
+  });
+  assert.match(text, /- \*<https:\/\/yourteam\.atlassian\.net\/browse\/KAN-4\|KAN-4>\* — In QA/);
+});
+
 test('draftStandup still lists untracked PRs/commits alongside grouped tickets', () => {
   const text = draftStandup({
     user: 'juan',
