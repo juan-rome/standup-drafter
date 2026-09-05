@@ -199,6 +199,18 @@ code {
   display: none;
 }
 
+.jira-connect-form {
+  margin: -2px 0 8px;
+}
+
+.jira-connect-form input {
+  margin-bottom: 6px;
+}
+
+.jira-connect-form[hidden] {
+  display: none;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

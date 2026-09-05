@@ -62,10 +62,28 @@
     <button id="slackTokenSubmit" class="small-btn">Save</button>
   </div>
 
+  <div class="connect-row">
+    <svg class="service-icon" height="14" width="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 12l8-8a2 2 0 012.8 0l7.2 7.2a2 2 0 010 2.8l-8 8a2 2 0 01-2.8 0L3 14.8a2 2 0 010-2.8z" fill="#2684FF" />
+      <circle cx="9" cy="9" r="1.6" fill="#fff" />
+    </svg>
+    <span class="connect-label">Jira</span>
+    <span id="jiraStatus" class="badge badge-off"><span class="badge-dot"></span>Not connected</span>
+    <button id="jiraConnectBtn" class="small-btn">Connect</button>
+  </div>
+  <div id="jiraConnectForm" class="jira-connect-form" hidden>
+    <input id="jiraBaseUrlInput" placeholder="yourteam.atlassian.net" />
+    <input id="jiraEmailInput" type="email" placeholder="you@company.com" />
+    <input id="jiraTokenInput" type="password" placeholder="API token" />
+    <button id="jiraConnectSubmit" class="full-btn">Save</button>
+    <p class="hint">Optional — adds live ticket status. Create a token at
+      id.atlassian.com/manage-profile/security/api-tokens.</p>
+  </div>
+
   <hr />
 
   <section id="draftSection" hidden>
-    <button id="generateBtn" class="full-btn">Pull yesterday's GitHub activity</button>
+    <button id="generateBtn" class="full-btn">Draft my standup</button>
     <textarea id="draftText" rows="9" placeholder="Your draft will appear here..."></textarea>
     <div class="row">
       <select id="channelSelect"></select>

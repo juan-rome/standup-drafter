@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke('github:poll', { deviceCode, interval, expiresIn }),
   connectSlack: (token) => ipcRenderer.invoke('slack:connect', token),
   listSlackChannels: () => ipcRenderer.invoke('slack:channels'),
+  connectJira: (baseUrl, email, apiToken) =>
+    ipcRenderer.invoke('jira:connect', { baseUrl, email, apiToken }),
   generateStandup: () => ipcRenderer.invoke('standup:generate'),
   postStandup: (channel, text, channelName) =>
     ipcRenderer.invoke('standup:post', { channel, text, channelName }),

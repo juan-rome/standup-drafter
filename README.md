@@ -3,9 +3,11 @@
 [![CI](https://github.com/juan-rome/standup-drafter/actions/workflows/ci.yml/badge.svg)](https://github.com/juan-rome/standup-drafter/actions/workflows/ci.yml)
 
 A macOS menu bar app that pulls your GitHub activity from the previous day
-(PRs opened, reviews given, commits), drafts a standup message, and posts it
-to a Slack channel after you review/edit it — all from a small popover under
-a tray icon, no full window required.
+(PRs opened, reviews given, commits), groups it by Jira ticket where a ticket
+key is detectable, optionally enriches those tickets with their live Jira
+status, drafts a standup message, and posts it to a Slack channel after you
+review/edit it — all from a small popover under a tray icon, no full window
+required.
 
 ## Setup
 
@@ -32,14 +34,27 @@ a tray icon, no full window required.
 5. Invite the bot to whichever channel(s) you want to post standups to
    (`/invite @Standup Drafter` in Slack).
 
-### 3. Run it
+### 3. Jira (optional)
+
+Only needed if you want live ticket status/summary shown next to each
+grouped ticket. Without it, tickets are still detected and grouped from
+GitHub PR/commit text — you just won't see their current status.
+
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens →
+   **Create API token**.
+2. In the app, click **Connect** next to Jira and fill in:
+   - Your Jira site (e.g. `yourteam.atlassian.net`)
+   - The email address on your Atlassian account
+   - The API token you just created
+
+### 4. Run it
 
 ```bash
 npm install
 npm start
 ```
 
-### 4. Build a distributable .dmg
+### 5. Build a distributable .dmg
 
 ```bash
 npm run dist
@@ -49,7 +64,7 @@ The unsigned `.dmg` will be in `dist/`. Since it's unsigned, macOS Gatekeeper
 will show a warning on first open — right-click the app → Open to bypass it,
 or System Settings → Privacy & Security → "Open Anyway".
 
-### 5. Run the tests
+### 6. Run the tests
 
 ```bash
 npm test
@@ -57,16 +72,17 @@ npm test
 
 Uses Node's built-in test runner (`node --test`) — no test framework
 dependency. The parsing/formatting logic (`draftStandup`, `parseActivity`,
-`filterMemberChannels`, `startOfYesterdayISO`) is factored out as pure
-functions specifically so it can be tested without an Electron runtime or
-network access; see [Design decisions](#design-decisions) below.
+`extractTicketKeys`, `parseTicketStatuses`, `filterMemberChannels`,
+`startOfYesterdayISO`) is factored out as pure functions specifically so it
+can be tested without an Electron runtime or network access; see
+[Design decisions](#design-decisions) below.
 
 ## How credentials are stored
 
-The GitHub token and Slack token are encrypted at rest using Electron's
-`safeStorage` API (OS keychain-backed) and stored in the app's local user
-data directory. Nothing is sent anywhere except GitHub's and Slack's own
-APIs.
+The GitHub token, Slack token, and Jira credentials (site URL, email, API
+token) are encrypted at rest using Electron's `safeStorage` API (OS
+keychain-backed) and stored in the app's local user data directory. Nothing
+is sent anywhere except GitHub's, Slack's, and Jira's own APIs.
 
 ## Design decisions
 
@@ -97,6 +113,19 @@ given this is a single-user personal tool, not a multi-tenant product:
   text, filtering joined channels — is factored into plain functions with no
   side effects, so `npm test` runs in plain Node with zero mocking of
   Electron internals.
+- **Ticket detection from GitHub text, not a required Jira dependency.**
+  Grouping PRs/commits by Jira ticket key works entirely from text already
+  fetched from GitHub (title, PR description, commit message) via a regex —
+  Jira is only needed for the extra step of showing that ticket's *live
+  status* (e.g. "In QA"). This means the grouping feature works with zero
+  extra auth, and Jira integration is additive/optional rather than a hard
+  dependency for a core feature.
+- **Jira via a pasted API token, not OAuth.** Same reasoning as the Slack
+  token: Atlassian's OAuth (3LO) needs a registered app and a local redirect
+  server to catch the callback. A personal API token (Basic auth with
+  email + token, the standard way to hit Jira Cloud's REST API
+  programmatically) skips all of that for a tool that's never going to be a
+  multi-tenant product.
 - **A hand-rendered tray icon instead of a static asset.** The icon is
   generated from a small signed-distance-field script
   ([scripts/generate-tray-icon.js](scripts/generate-tray-icon.js)) rather

@@ -4,6 +4,7 @@ const fs = require('fs');
 const store = require('./lib/store');
 const github = require('./lib/github');
 const slack = require('./lib/slack');
+const jira = require('./lib/jira');
 const { draftStandup } = require('./lib/draft');
 
 let tray;
@@ -103,6 +104,7 @@ app.on('window-all-closed', (event) => {
 ipcMain.handle('auth:status', () => ({
   github: github.isAuthenticated(),
   slack: slack.isAuthenticated(),
+  jira: jira.isAuthenticated(),
 }));
 
 ipcMain.handle('github:requestCode', async () => {
@@ -123,8 +125,24 @@ ipcMain.handle('slack:channels', async () => {
   return slack.listChannels();
 });
 
+ipcMain.handle('jira:connect', async (_event, { baseUrl, email, apiToken }) => {
+  return jira.saveCredentials(baseUrl, email, apiToken);
+});
+
 ipcMain.handle('standup:generate', async () => {
   const activity = await github.getYesterdayActivity();
+
+  if (jira.isAuthenticated() && activity.ticketKeys.length > 0) {
+    try {
+      const statuses = await jira.fetchTicketStatuses(activity.ticketKeys);
+      activity.tickets.forEach((ticket) => {
+        if (statuses[ticket.key]) ticket.jira = statuses[ticket.key];
+      });
+    } catch {
+      // Jira enrichment is best-effort — a failed lookup shouldn't block the standup.
+    }
+  }
+
   return draftStandup(activity);
 });
 

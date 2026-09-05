@@ -9,6 +9,14 @@ const slackTokenRow = document.getElementById('slackTokenRow');
 const slackTokenInput = document.getElementById('slackTokenInput');
 const slackTokenSubmit = document.getElementById('slackTokenSubmit');
 
+const jiraStatus = document.getElementById('jiraStatus');
+const jiraConnectBtn = document.getElementById('jiraConnectBtn');
+const jiraConnectForm = document.getElementById('jiraConnectForm');
+const jiraBaseUrlInput = document.getElementById('jiraBaseUrlInput');
+const jiraEmailInput = document.getElementById('jiraEmailInput');
+const jiraTokenInput = document.getElementById('jiraTokenInput');
+const jiraConnectSubmit = document.getElementById('jiraConnectSubmit');
+
 const draftSection = document.getElementById('draftSection');
 const emptyHint = document.getElementById('emptyHint');
 const generateBtn = document.getElementById('generateBtn');
@@ -56,6 +64,10 @@ async function refreshStatus() {
   setBadge(slackStatus, status.slack, status.slack ? 'Connected' : 'Not connected');
   slackConnectBtn.hidden = status.slack;
   if (status.slack) slackTokenRow.hidden = true;
+
+  setBadge(jiraStatus, status.jira, status.jira ? 'Connected' : 'Not connected');
+  jiraConnectBtn.hidden = status.jira;
+  if (status.jira) jiraConnectForm.hidden = true;
 
   const ready = status.github && status.slack;
   draftSection.hidden = !ready;
@@ -129,16 +141,38 @@ slackTokenSubmit.addEventListener('click', async () => {
   }
 });
 
+jiraConnectBtn.addEventListener('click', () => {
+  jiraConnectForm.hidden = !jiraConnectForm.hidden;
+  if (!jiraConnectForm.hidden) jiraBaseUrlInput.focus();
+});
+
+jiraConnectSubmit.addEventListener('click', async () => {
+  const baseUrl = jiraBaseUrlInput.value.trim();
+  const email = jiraEmailInput.value.trim();
+  const apiToken = jiraTokenInput.value.trim();
+  if (!baseUrl || !email || !apiToken) return;
+  jiraConnectSubmit.disabled = true;
+  const result = await window.api.connectJira(baseUrl, email, apiToken);
+  jiraConnectSubmit.disabled = false;
+
+  if (result.success) {
+    jiraTokenInput.value = '';
+    await refreshStatus();
+  } else {
+    setBadge(jiraStatus, false, `Failed: ${result.error}`);
+  }
+});
+
 generateBtn.addEventListener('click', async () => {
   generateBtn.disabled = true;
-  generateBtn.textContent = 'Pulling activity...';
+  generateBtn.textContent = 'Drafting...';
   try {
     draftText.value = await window.api.generateStandup();
   } catch (err) {
     showToast(`Error: ${err.message}`, true);
   }
   generateBtn.disabled = false;
-  generateBtn.textContent = "Pull yesterday's GitHub activity";
+  generateBtn.textContent = 'Draft my standup';
 });
 
 postBtn.addEventListener('click', async () => {

@@ -33,8 +33,8 @@ test('draftStandup groups commits by repo and flags multiple commits with ellips
       { message: 'only commit', repo: 'x/z' },
     ],
   });
-  assert.match(text, /2 commit\(s\) in x\/y: first commit, \.\.\./);
-  assert.match(text, /1 commit\(s\) in x\/z: only commit(?!, \.\.\.)/);
+  assert.match(text, /2 commit\(s\) in x\/y: First commit, \.\.\./);
+  assert.match(text, /1 commit\(s\) in x\/z: Only commit(?!, \.\.\.)/);
 });
 
 test('draftStandup includes a Reviews section only when reviews exist', () => {
@@ -49,6 +49,106 @@ test('draftStandup includes a Reviews section only when reviews exist', () => {
 
   const withoutReviews = draftStandup({ user: 'juan', pullRequests: [], reviews: [], commits: [] });
   assert.doesNotMatch(withoutReviews, /\*Reviews:\*/);
+});
+
+test('draftStandup groups a ticket with a PR into a key line, PR link, and description', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [],
+    tickets: [
+      {
+        key: 'KAN-4',
+        prs: [
+          {
+            title: 'KAN-4: Add a live character counter',
+            url: 'https://github.com/x/y/pull/1',
+            repo: 'x/y',
+          },
+        ],
+        commits: [],
+      },
+    ],
+  });
+  assert.match(text, /- \*KAN-4\*\n/);
+  assert.match(text, /- PR: <https:\/\/github\.com\/x\/y\/pull\/1\|KAN-4: Add a live character counter>/);
+  assert.match(text, /- Add a live character counter\n/);
+});
+
+test('draftStandup falls back to a commit when a ticket has no PR', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [],
+    tickets: [
+      {
+        key: 'ADR-005',
+        prs: [],
+        commits: [{ message: 'ADR-005 refine resume export', repo: 'x/y', url: 'https://github.com/x/y/commit/abc' }],
+      },
+    ],
+  });
+  assert.match(text, /- Commit: <https:\/\/github\.com\/x\/y\/commit\/abc\|x\/y>/);
+  assert.match(text, /- Refine resume export/);
+});
+
+test('draftStandup strips conventional-commit prefixes and capitalizes the result', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [],
+    tickets: [
+      {
+        key: 'ADR-005',
+        prs: [],
+        commits: [
+          {
+            message: 'ADR-005 fix: make dark mode the unconditional default, not OS-dependent',
+            repo: 'x/y',
+            url: 'https://github.com/x/y/commit/abc',
+          },
+        ],
+      },
+    ],
+  });
+  assert.match(text, /- Make dark mode the unconditional default, not OS-dependent\n/);
+  assert.doesNotMatch(text, /fix:/);
+});
+
+test('draftStandup strips conventional-commit prefixes from untracked commit summaries too', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [{ message: 'feat: add real resume.pdf and its generator script', repo: 'x/y' }],
+  });
+  assert.match(text, /1 commit\(s\) in x\/y: Add real resume\.pdf and its generator script/);
+});
+
+test('draftStandup appends the Jira status next to the ticket key when present', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [],
+    reviews: [],
+    commits: [],
+    tickets: [{ key: 'KAN-4', prs: [], commits: [], jira: { status: 'In QA', summary: 'Add counter' } }],
+  });
+  assert.match(text, /- \*KAN-4\* — In QA/);
+});
+
+test('draftStandup still lists untracked PRs/commits alongside grouped tickets', () => {
+  const text = draftStandup({
+    user: 'juan',
+    pullRequests: [{ title: 'Unrelated fix', url: 'https://github.com/x/y/pull/9', repo: 'x/y' }],
+    reviews: [],
+    commits: [],
+    tickets: [{ key: 'KAN-4', prs: [{ title: 'KAN-4: Thing', url: 'https://github.com/x/y/pull/1', repo: 'x/y' }], commits: [] }],
+  });
+  assert.match(text, /\*KAN-4\*/);
+  assert.match(text, /Opened\/updated PR: <https:\/\/github\.com\/x\/y\/pull\/9\|Unrelated fix>/);
 });
 
 test('draftStandup always ends with Today and Blockers sections', () => {

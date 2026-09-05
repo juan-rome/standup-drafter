@@ -71,27 +71,62 @@ function startOfYesterdayISO(now = new Date()) {
   return d.toISOString().slice(0, 10);
 }
 
+// Matches Jira-style issue keys (e.g. "KAN-4"), whether written bare in a
+// title/commit message or embedded in a browse URL like
+// https://yourteam.atlassian.net/browse/KAN-4 — the word-boundary match
+// still isolates just the key in both cases.
+const TICKET_KEY_REGEX = /\b[A-Z][A-Z0-9]{1,9}-\d+\b/g;
+
+function extractTicketKeys(text) {
+  if (!text) return [];
+  return text.match(TICKET_KEY_REGEX) || [];
+}
+
 // Pure transform from raw GitHub search-API responses into our activity shape.
 // Kept free of network/store access so it can be unit tested directly.
 function parseActivity(login, authoredPRs, reviewedPRs, commits) {
-  return {
-    user: login,
-    pullRequests: authoredPRs.items.map((pr) => ({
+  const ticketsByKey = new Map();
+  const ticketEntry = (key) => {
+    if (!ticketsByKey.has(key)) ticketsByKey.set(key, { key, prs: [], commits: [] });
+    return ticketsByKey.get(key);
+  };
+
+  const pullRequests = authoredPRs.items.map((pr) => {
+    const mapped = {
       title: pr.title,
       url: pr.html_url,
       repo: pr.repository_url.split('/').slice(-2).join('/'),
       state: pr.state,
-    })),
+    };
+    const keys = Array.from(new Set([...extractTicketKeys(pr.title), ...extractTicketKeys(pr.body)]));
+    keys.forEach((key) => ticketEntry(key).prs.push(mapped));
+    return { ...mapped, ticketKeys: keys };
+  });
+
+  const commitsMapped = commits.items.map((c) => {
+    const mapped = {
+      message: c.commit.message.split('\n')[0],
+      repo: c.repository.full_name,
+      url: c.html_url,
+    };
+    const keys = extractTicketKeys(c.commit.message);
+    keys.forEach((key) => ticketEntry(key).commits.push(mapped));
+    return { ...mapped, ticketKeys: keys };
+  });
+
+  const tickets = Array.from(ticketsByKey.values()).sort((a, b) => a.key.localeCompare(b.key));
+
+  return {
+    user: login,
+    pullRequests,
     reviews: reviewedPRs.items.map((pr) => ({
       title: pr.title,
       url: pr.html_url,
       repo: pr.repository_url.split('/').slice(-2).join('/'),
     })),
-    commits: commits.items.map((c) => ({
-      message: c.commit.message.split('\n')[0],
-      repo: c.repository.full_name,
-      url: c.html_url,
-    })),
+    commits: commitsMapped,
+    tickets,
+    ticketKeys: tickets.map((t) => t.key),
   };
 }
 
@@ -125,4 +160,5 @@ module.exports = {
   getYesterdayActivity,
   startOfYesterdayISO,
   parseActivity,
+  extractTicketKeys,
 };
