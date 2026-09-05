@@ -9,6 +9,14 @@ status, drafts a standup message, and posts it to a Slack channel after you
 review/edit it — all from a small popover under a tray icon, no full window
 required.
 
+<p align="center">
+  <img src="screenshots/popover.png" alt="Standup Drafter popover showing connected integrations and a generated draft" width="360">
+</p>
+
+<p align="center">
+  <img src="screenshots/slack-result.png" alt="The resulting standup message posted in Slack, with hyperlinked Jira tickets and live status" width="600">
+</p>
+
 ## Setup
 
 ### 1. GitHub OAuth App (Device Flow)
